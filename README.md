@@ -96,7 +96,7 @@ data = libvirt.get_info('foo', 'instance-00000f01')
 ```
 Tic-Toc Stopwatch (time\_manager.py)
 -------------
-This simple Python class simulate a stopwatch and is useful to compute elapsed time of execution with the given resolution. In some scenarios, it can be very useful to increase the accuracy of the busy cycle length given to a periodic task.
+This simple Python class simulates a stopwatch and is useful to compute elapsed time of execution with the given resolution. In some scenarios, it can be very useful to increase the accuracy of the busy cycle length given to a periodic task.
 
 The `tic` method starts the stopwatch, while the `toc` stops and return the elapsed time since the last `tic` call. The `toc` method has a resolution argument that can be one of:
 
