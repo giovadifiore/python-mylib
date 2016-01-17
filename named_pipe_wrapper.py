@@ -11,7 +11,11 @@ class NamedPipeWrapper:
         self.pipe_path = path
         self.pipe = None
 
-    def open_pipe(self, mode='w', blocking=True):
+    def _open_pipe(self, mode='w', blocking=True):
+	"""
+	This private method is used internally to handle the open syscall for the PIPE"
+	:return: the named PIPE fd on success
+	"""
         # If file doesn't exist, mkfifo
         if not os.path.isfile(self.pipe_path) or not stat.S_ISFIFO(os.stat(self.pipe_path).st_mode):
             try:
@@ -37,14 +41,21 @@ class NamedPipeWrapper:
 
         return self.pipe
 
-    def close_pipe(self):
+    def _close_pipe(self):
+	"""
+	This method closes the PIPE, if any
+	"""
         if self.pipe is not None:
             os.close(self.pipe)
 
-    def write_pipe(self, data):
+    def send(self, data):
+	"""
+	This method attempts to write data to PIPE and automatically handles the openin/creation of it
+	:return: True if success, False otherwise
+	"""
         # If the pipe was not open, try to open it
         if self.pipe is None:
-            self.open_pipe(blocking=False)
+            self._open_pipe(blocking=False)
 
         # If the pipe is ready, write to it
         if self.pipe is not None:
@@ -56,7 +67,7 @@ class NamedPipeWrapper:
         else:
             return False
 
-    def read_pipe(self):
+    def receive(self):
         """
         This method attempts to read from the open named pipe and blocks the caller until data is received
         :return: received data (loaded pickle object) from the named pipe
@@ -70,8 +81,8 @@ class NamedPipeWrapper:
             return data
         else:
             # If the read returned nothing, means that the write end-point was closed
-            self.close_pipe()
+            self._close_pipe()
             # Block waiting a new open
-            self.open_pipe(mode='r')
+            self._open_pipe(mode='r')
             # Call again this function
-            return self.read_pipe()
+            return self.receive()
