@@ -82,7 +82,7 @@ The connection is maintained within the same contacted host which executes the l
 Currently, the only supported libvirt method is `info`.
 
 #### Example of use
-This example establishes a connection to a libvirt daemon on the `foo` host and to calls the info method for a specified domain identified with `instance-00000f01`. This example uses TCP to communicate with the libvirt instance which is interfacing `qemu` domains. 
+This example establishes a connection to the libvirt daemon on the `foo` host and then calls the info method for a specified domain identified with `instance-00000f01`. This example uses TCP to communicate with the libvirt instance which is interfacing `qemu` domains. 
 
 ```python
 libvirt = LibvirtWrapper()
