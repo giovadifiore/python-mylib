@@ -16,25 +16,25 @@ Please consider security risks related to pickle object serialization. For furth
 #### Sample of use 
 Reader process:
 
-	```python
-	# reader process that continuously reads from PIPE
-	pipe = NamedPipeWrapper('/tmp/my_pipe.pipe')
-	while (True):
-		data = pipe.receive()
-		print(data)  # data successfully received!
-	```
+```python
+# reader process that continuously reads from PIPE
+pipe = NamedPipeWrapper('/tmp/my_pipe.pipe')
+while (True):
+	data = pipe.receive()
+	print(data)  # data successfully received!
+```
 
 Writer process:
  
-    ```python
-    # reader process that continuously reads from PIPE
-    pipe = NamedPipeWrapper('/tmp/my_pipe.pipe')
-    data = {'foo': 'bar'}
-	if pipe.send(data):
-		print(data)  # data successfully sent!
-	else:
-		pass  # no readers available
-	```
+```python
+# reader process that continuously reads from PIPE
+pipe = NamedPipeWrapper('/tmp/my_pipe.pipe')
+data = {'foo': 'bar'}
+if pipe.send(data):
+	print(data)  # data successfully sent!
+else:
+	pass  # no readers available
+```
 Thread-safe Multi-Group Message Buffer (receive\_queue.py)
 -------------
 This class abstracts a group-separated message buffer of fixed length implemented as a FIFO queue. It's useful in scenarios when a single compute node receives messages from multiple clients that should be consumed by a separate thread of control. The internal structure of the buffers can be accessed using a `groupkey` and an `idx` key. Group keys are statically defined within class constructor, but buffers inside a single group can be dynamically allocated on demand. 
@@ -53,23 +53,23 @@ This example instantiate two groups `health` and `telemetry` of buffers with a f
 
 Example of object allocation:
 
-    ```python
-    buffers = ReceiveQueue(('health', 'telemetry'), 10, 'exclusive')
-    ```
+```python
+buffers = ReceiveQueue(('health', 'telemetry'), 10, 'exclusive')
+```
 
 A receiver (i.e. writer) thread could be:
 
-    ```python
-    # Enqueues 'xyz' to 'foo' buffer in 'health' group
-    buffers.sync_receive('health', 'foo', 'xyz')
-    # Enqueues 'xyz' and 'uvt' to 'bar' buffer in 'health' group
-    buffers.sync_receive('health', 'bar', 'xyz')
-    buffers.sync_receive('health', 'bar', 'uvt')
-	```
+```python
+# Enqueues 'xyz' to 'foo' buffer in 'health' group
+buffers.sync_receive('health', 'foo', 'xyz')
+# Enqueues 'xyz' and 'uvt' to 'bar' buffer in 'health' group
+buffers.sync_receive('health', 'bar', 'xyz')
+buffers.sync_receive('health', 'bar', 'uvt')
+```
 An extractor (i.e. reader) thread could be:
 	
-	```python
-	# A reader can use this extract method
-	bar = buffers.sync_extract('health', 'bar')
-	print(bar)  # bar is a 2-elem tuple containing the strings 'xyz' and 'uvt'
-	```
+```python
+# A reader can use this extract method
+bar = buffers.sync_extract('health', 'bar')
+print(bar)  # bar is a 2-elem tuple containing the strings 'xyz' and 'uvt'
+```
