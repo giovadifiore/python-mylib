@@ -11,11 +11,7 @@ class NamedPipeWrapper:
         self.pipe_path = path
         self.pipe = None
 
-    def _open_pipe(self, mode='w', blocking=True):
-	"""
-	This private method is used internally to handle the open syscall for the PIPE"
-	:return: the named PIPE fd on success
-	"""
+    def open_pipe(self, mode='w', blocking=True):
         # If file doesn't exist, mkfifo
         if not os.path.isfile(self.pipe_path) or not stat.S_ISFIFO(os.stat(self.pipe_path).st_mode):
             try:
@@ -37,29 +33,28 @@ class NamedPipeWrapper:
             flag |= os.O_NONBLOCK
 
         # Open
-        self.pipe = os.open(self.pipe_path, flag)
+        try:
+            self.pipe = os.open(self.pipe_path, flag)
+        except OSError as e:
+            if e.errno == errno.ENXIO:
+                self.pipe = None
 
         return self.pipe
 
-    def _close_pipe(self):
-	"""
-	This method closes the PIPE, if any
-	"""
+    def close_pipe(self):
         if self.pipe is not None:
             os.close(self.pipe)
 
-    def send(self, data):
-	"""
-	This method attempts to write data to PIPE and automatically handles the openin/creation of it
-	:return: True if success, False otherwise
-	"""
+    def write_pipe(self, data):
         # If the pipe was not open, try to open it
         if self.pipe is None:
-            self._open_pipe(blocking=False)
+            self.open_pipe(blocking=False)
 
         # If the pipe is ready, write to it
         if self.pipe is not None:
             try:
+                # pickle data and write to PIPE
+                data = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
                 os.write(self.pipe, data)
                 return True
             except OSError:
@@ -67,7 +62,7 @@ class NamedPipeWrapper:
         else:
             return False
 
-    def receive(self):
+    def read_pipe(self):
         """
         This method attempts to read from the open named pipe and blocks the caller until data is received
         :return: received data (loaded pickle object) from the named pipe
@@ -81,8 +76,8 @@ class NamedPipeWrapper:
             return data
         else:
             # If the read returned nothing, means that the write end-point was closed
-            self._close_pipe()
+            self.close_pipe()
             # Block waiting a new open
-            self._open_pipe(mode='r')
+            self.open_pipe(mode='r')
             # Call again this function
-            return self.receive()
+            return self.read_pipe()
