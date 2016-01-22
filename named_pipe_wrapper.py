@@ -45,7 +45,7 @@ class NamedPipeWrapper:
         if self.pipe is not None:
             os.close(self.pipe)
 
-    def write_pipe(self, data):
+    def send(self, data):
         # If the pipe was not open, try to open it
         if self.pipe is None:
             self.open_pipe(blocking=False)
@@ -62,7 +62,7 @@ class NamedPipeWrapper:
         else:
             return False
 
-    def read_pipe(self):
+    def receive(self):
         """
         This method attempts to read from the open named pipe and blocks the caller until data is received
         :return: received data (loaded pickle object) from the named pipe
@@ -80,4 +80,4 @@ class NamedPipeWrapper:
             # Block waiting a new open
             self.open_pipe(mode='r')
             # Call again this function
-            return self.read_pipe()
+            return self.receive()
